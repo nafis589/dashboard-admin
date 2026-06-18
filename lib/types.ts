@@ -68,3 +68,55 @@ export interface AdminVendorDetail extends AdminVendorSummary {
   orders?: Array<{ id: string; status: string; total_amount: number; created_at: string }>;
   actions_history?: Array<{ id: string; action: string; note?: string | null; created_at: string }>;
 }
+
+export type ProductStatus =
+  | 'DRAFT'
+  | 'PENDING_REVIEW'
+  | 'ACTIVE'
+  | 'SOLD'
+  | 'ARCHIVED'
+  | 'REJECTED';
+
+export interface AdminProductSummary {
+  id: string;
+  vendor_id: string;
+  title: string;
+  price: number;
+  status: ProductStatus;
+  stock: number;
+  views_count: number;
+  created_at: string;
+  primary_image: string | null;
+  shop_name?: string | null;
+  category_name?: string | null;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  parent_id: string | null;
+  column_group: string | null;
+  image_url: string | null;
+  position: number;
+  created_at?: string;
+  updated_at?: string;
+  children?: Category[];
+}
+
+export interface AdminStatsChart {
+  funnel: Array<{ label: string; value: number; conversion_rate: number | null }>;
+  top_products: Array<{
+    id: string;
+    title: string;
+    views_count: number;
+    shop_name: string | null;
+    orders_count: number;
+  }>;
+  cart_abandonment: Array<{
+    date: string;
+    carts: number;
+    orders: number;
+    abandonment_rate: number;
+  }>;
+}

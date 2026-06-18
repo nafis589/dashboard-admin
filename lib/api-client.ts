@@ -86,4 +86,5 @@ export const api = {
   post: <T>(endpoint: string, body?: unknown, options?: RequestOptions): Promise<T> =>
     request<T>('POST', endpoint, body, options),
   patch: <T>(endpoint: string, body?: unknown): Promise<T> => request<T>('PATCH', endpoint, body),
+  delete: <T>(endpoint: string): Promise<T> => request<T>('DELETE', endpoint),
 };
