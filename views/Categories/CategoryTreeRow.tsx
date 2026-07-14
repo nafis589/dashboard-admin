@@ -45,6 +45,9 @@ export function CategoryTreeRow({
   onAddChild,
   isSaving,
 }: CategoryTreeRowProps) {
+  const isSubcategory = depth > 0;
+  const emptyCell = <span className="text-muted-foreground">—</span>;
+
   return (
     <TableRow className="hover:bg-muted/40">
       <TableCell className="w-12 text-center text-muted-foreground text-xs tabular-nums">
@@ -90,12 +93,16 @@ export function CategoryTreeRow({
       </TableCell>
 
       <TableCell className="min-w-[140px]">
-        <Input
-          className="h-9 min-w-0 text-sm"
-          placeholder="Groupe colonne"
-          value={draft.column_group}
-          onChange={(event) => onChange({ column_group: event.target.value })}
-        />
+        {isSubcategory ? (
+          emptyCell
+        ) : (
+          <Input
+            className="h-9 min-w-0 text-sm"
+            placeholder="Groupe colonne"
+            value={draft.column_group}
+            onChange={(event) => onChange({ column_group: event.target.value })}
+          />
+        )}
       </TableCell>
 
       <TableCell className="w-24">
@@ -109,12 +116,14 @@ export function CategoryTreeRow({
       </TableCell>
 
       <TableCell className="min-w-[160px]">
-        <Input
-          className="h-9 min-w-0 text-sm"
-          placeholder="URL image"
-          value={draft.image_url}
-          onChange={(event) => onChange({ image_url: event.target.value })}
-        />
+        {isSubcategory ? emptyCell : (
+          <Input
+            className="h-9 min-w-0 text-sm"
+            placeholder="URL image"
+            value={draft.image_url}
+            onChange={(event) => onChange({ image_url: event.target.value })}
+          />
+        )}
       </TableCell>
 
       <TableCell className="w-14 text-right">

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   type ColumnDef,
   flexRender,
@@ -92,6 +93,7 @@ function preventPaginationNavigation(event: React.MouseEvent<HTMLAnchorElement>)
 type RejectModalState = { open: true; productId: string; title: string; reason: string } | { open: false };
 
 export default function ProductList() {
+  const router = useRouter();
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -334,9 +336,16 @@ export default function ProductList() {
                   </TableRow>
                 ) : table.getRowModel().rows.length ? (
                   table.getRowModel().rows.map((row) => (
-                    <TableRow key={row.id}>
+                    <TableRow
+                      key={row.id}
+                      className="cursor-pointer"
+                      onClick={() => router.push(`/products/${row.original.id}`)}
+                    >
                       {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
+                        <TableCell
+                          key={cell.id}
+                          onClick={cell.column.id === 'actions' ? (e) => e.stopPropagation() : undefined}
+                        >
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </TableCell>
                       ))}

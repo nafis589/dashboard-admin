@@ -86,9 +86,37 @@ export interface AdminProductSummary {
   stock: number;
   views_count: number;
   created_at: string;
+  updated_at?: string;
   primary_image: string | null;
   shop_name?: string | null;
   category_name?: string | null;
+  brand?: string | null;
+  description?: string | null;
+  condition?: string | null;
+  material?: string | null;
+  color?: string | null;
+  size?: string | null;
+  category_id?: string | null;
+}
+
+export interface AdminProductImage {
+  id: string;
+  product_id: string;
+  url: string;
+  position: number;
+  is_primary: boolean;
+}
+
+export interface AdminProductVendorInfo {
+  shop_name: string;
+  email: string;
+  status: VendorStatus;
+}
+
+export interface AdminProductDetail extends AdminProductSummary {
+  images: AdminProductImage[];
+  orders_count: number;
+  vendor: AdminProductVendorInfo;
 }
 
 export interface Category {

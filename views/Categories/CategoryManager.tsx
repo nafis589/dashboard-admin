@@ -94,7 +94,7 @@ export default function CategoryManager() {
       }
       return next;
     });
-    setExpanded(getExpandableRowIds(serverTree));
+    setExpanded({});
   }, [serverTree]);
 
   const filteredTree = useMemo(() => {
@@ -122,6 +122,12 @@ export default function CategoryManager() {
 
     return filterNodes(localTree);
   }, [drafts, localTree, searchTerm]);
+
+  useEffect(() => {
+    const term = searchTerm.trim();
+    if (!term) return;
+    setExpanded(getExpandableRowIds(filteredTree));
+  }, [filteredTree, searchTerm]);
 
   const table = useReactTable({
     data: filteredTree,
@@ -175,6 +181,10 @@ export default function CategoryManager() {
         return;
       }
 
+      const isSubcategory = row.depth > 0;
+      const columnGroup = isSubcategory ? null : draft.column_group.trim() || null;
+      const imageUrl = isSubcategory ? null : draft.image_url.trim() || null;
+
       setSavingId(draft.id);
       try {
         if (draft.isNew) {
@@ -182,8 +192,8 @@ export default function CategoryManager() {
             name: draft.name.trim(),
             slug: draft.slug.trim() || undefined,
             parent_id: draft.parent_id,
-            column_group: draft.column_group.trim() || null,
-            image_url: draft.image_url.trim() || null,
+            column_group: columnGroup,
+            image_url: imageUrl,
             position: draft.position,
           });
           setLocalTree((current) => removeNodeFromTree(current, draft.id));
@@ -198,8 +208,8 @@ export default function CategoryManager() {
             id: draft.id,
             name: draft.name.trim(),
             slug: draft.slug.trim() || undefined,
-            column_group: draft.column_group.trim() || null,
-            image_url: draft.image_url.trim() || null,
+            column_group: columnGroup,
+            image_url: imageUrl,
             position: draft.position,
           });
           await afterMutation('Catégorie mise à jour');
@@ -288,8 +298,12 @@ export default function CategoryManager() {
                 placeholder="Rechercher…"
                 value={searchTerm}
                 onChange={(event) => {
-                  setSearchTerm(event.target.value);
+                  const value = event.target.value;
+                  setSearchTerm(value);
                   setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+                  if (!value.trim()) {
+                    setExpanded({});
+                  }
                 }}
               />
             </div>

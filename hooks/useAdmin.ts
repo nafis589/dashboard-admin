@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import type {
+  AdminProductDetail,
   AdminProductSummary,
   AdminStats,
   AdminStatsChart,
@@ -37,6 +38,10 @@ interface ProductsResponse {
 
 interface ProductResponse {
   data: AdminProductSummary;
+}
+
+interface AdminProductDetailResponse {
+  data: AdminProductDetail;
 }
 
 interface CategoriesResponse {
@@ -105,13 +110,23 @@ export function useAdminProducts(params?: { status?: string; search?: string }) 
   });
 }
 
+export function useAdminProduct(productId: string) {
+  return useQuery({
+    queryKey: ['admin', 'products', productId],
+    queryFn: () => api.get<AdminProductDetailResponse>(`/api/admin/products/${productId}`),
+    enabled: Boolean(productId),
+    retry: 0,
+  });
+}
+
 export function useAdminProductApprove() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (productId: string) =>
       api.patch<ProductResponse>(`/api/admin/products/${productId}/approve`),
-    onSuccess: () => {
+    onSuccess: (_data, productId) => {
       qc.invalidateQueries({ queryKey: ['admin', 'products'] });
+      qc.invalidateQueries({ queryKey: ['admin', 'products', productId] });
     },
   });
 }
@@ -121,6 +136,30 @@ export function useAdminProductReject() {
   return useMutation({
     mutationFn: ({ productId, reason }: { productId: string; reason: string }) =>
       api.patch<ProductResponse>(`/api/admin/products/${productId}/reject`, { reason }),
+    onSuccess: (_data, { productId }) => {
+      qc.invalidateQueries({ queryKey: ['admin', 'products'] });
+      qc.invalidateQueries({ queryKey: ['admin', 'products', productId] });
+    },
+  });
+}
+
+export function useAdminProductArchive() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ productId, reason }: { productId: string; reason?: string }) =>
+      api.patch<ProductResponse>(`/api/admin/products/${productId}/archive`, { reason }),
+    onSuccess: (_data, { productId }) => {
+      qc.invalidateQueries({ queryKey: ['admin', 'products'] });
+      qc.invalidateQueries({ queryKey: ['admin', 'products', productId] });
+    },
+  });
+}
+
+export function useAdminProductDelete() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (productId: string) =>
+      api.delete<{ data: { message: string } }>(`/api/admin/products/${productId}`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'products'] });
     },
