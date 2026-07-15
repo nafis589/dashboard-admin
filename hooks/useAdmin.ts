@@ -3,9 +3,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import type {
+  AdminMarketplaceUserDetail,
+  AdminMarketplaceUserSummary,
+  AdminOrderDetail,
+  AdminOrderStats,
+  AdminOrderSummary,
   AdminProductDetail,
   AdminProductSummary,
   AdminStats,
+  AdminUserOrderSummary,
+  AdminVendorProductSummary,
   AdminStatsChart,
   AdminVendorDetail,
   AdminVendorSummary,
@@ -233,5 +240,185 @@ export function useAdminStatsChart() {
     queryKey: ['admin', 'stats', 'chart'],
     queryFn: () => api.get<StatsChartResponse>('/api/admin/stats/chart'),
     retry: 0,
+  });
+}
+
+interface UsersListResponse {
+  data: AdminMarketplaceUserSummary[];
+  meta: PaginatedMeta;
+}
+
+interface UserDetailResponse {
+  data: AdminMarketplaceUserDetail;
+}
+
+interface UserOrdersResponse {
+  data: AdminUserOrderSummary[];
+  meta: PaginatedMeta;
+}
+
+interface VendorProductsResponse {
+  data: AdminVendorProductSummary[];
+  meta: PaginatedMeta;
+}
+
+export interface AdminUsersQueryParams {
+  role?: string;
+  status?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+function buildUsersQuery(params?: AdminUsersQueryParams): string {
+  const query = new URLSearchParams();
+  if (params?.role) query.set('role', params.role);
+  if (params?.status) query.set('status', params.status);
+  if (params?.search) query.set('search', params.search);
+  if (params?.page) query.set('page', String(params.page));
+  query.set('limit', String(params?.limit ?? 25));
+  return query.toString();
+}
+
+export function useAdminUsers(params?: AdminUsersQueryParams) {
+  const qs = buildUsersQuery(params);
+  return useQuery({
+    queryKey: ['admin', 'users', params],
+    queryFn: () => api.get<UsersListResponse>(`/api/admin/users?${qs}`),
+    retry: 0,
+  });
+}
+
+export function useAdminUser(userId: string) {
+  return useQuery({
+    queryKey: ['admin', 'users', userId],
+    queryFn: () => api.get<UserDetailResponse>(`/api/admin/users/${userId}`),
+    enabled: Boolean(userId),
+    retry: 0,
+  });
+}
+
+export function useAdminUserOrders(userId: string, page = 1) {
+  return useQuery({
+    queryKey: ['admin', 'users', userId, 'orders', page],
+    queryFn: () =>
+      api.get<UserOrdersResponse>(`/api/admin/users/${userId}/orders?page=${page}&limit=10`),
+    enabled: Boolean(userId),
+    retry: 0,
+  });
+}
+
+export function useAdminVendorProducts(vendorId: string | null, page = 1) {
+  return useQuery({
+    queryKey: ['admin', 'vendors', vendorId, 'products', page],
+    queryFn: () =>
+      api.get<VendorProductsResponse>(
+        `/api/admin/vendors/${vendorId}/products?page=${page}&limit=10`,
+      ),
+    enabled: Boolean(vendorId),
+    retry: 0,
+  });
+}
+
+export function useAdminUserSuspend() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, reason }: { userId: string; reason?: string }) =>
+      api.patch<{ data: AdminMarketplaceUserSummary }>(`/api/admin/users/${userId}/suspend`, {
+        reason,
+      }),
+    onSuccess: (_data, { userId }) => {
+      qc.invalidateQueries({ queryKey: ['admin', 'users'] });
+      qc.invalidateQueries({ queryKey: ['admin', 'users', userId] });
+    },
+  });
+}
+
+export function useAdminUserActivate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) =>
+      api.patch<{ data: AdminMarketplaceUserSummary }>(`/api/admin/users/${userId}/activate`),
+    onSuccess: (_data, userId) => {
+      qc.invalidateQueries({ queryKey: ['admin', 'users'] });
+      qc.invalidateQueries({ queryKey: ['admin', 'users', userId] });
+    },
+  });
+}
+
+interface AdminOrdersResponse {
+  data: AdminOrderSummary[];
+  meta: PaginatedMeta;
+}
+
+interface AdminOrderResponse {
+  data: AdminOrderDetail;
+}
+
+interface AdminOrderStatsResponse {
+  data: AdminOrderStats;
+}
+
+export interface AdminOrdersQueryParams {
+  status?: string;
+  vendor_id?: string;
+  buyer_id?: string;
+  search?: string;
+  date_from?: string;
+  date_to?: string;
+  page?: number;
+  limit?: number;
+}
+
+function buildOrdersQuery(params?: AdminOrdersQueryParams): string {
+  const query = new URLSearchParams();
+  if (params?.status) query.set('status', params.status);
+  if (params?.vendor_id) query.set('vendor_id', params.vendor_id);
+  if (params?.buyer_id) query.set('buyer_id', params.buyer_id);
+  if (params?.search) query.set('search', params.search);
+  if (params?.date_from) query.set('date_from', params.date_from);
+  if (params?.date_to) query.set('date_to', params.date_to);
+  if (params?.page) query.set('page', String(params.page));
+  query.set('limit', String(params?.limit ?? 25));
+  return query.toString();
+}
+
+export function useAdminOrderStats() {
+  return useQuery({
+    queryKey: ['admin', 'orders', 'stats'],
+    queryFn: () => api.get<AdminOrderStatsResponse>('/api/admin/orders/stats'),
+    retry: 0,
+  });
+}
+
+export function useAdminOrders(params?: AdminOrdersQueryParams) {
+  const qs = buildOrdersQuery(params);
+  return useQuery({
+    queryKey: ['admin', 'orders', params],
+    queryFn: () => api.get<AdminOrdersResponse>(`/api/admin/orders?${qs}`),
+    retry: 0,
+  });
+}
+
+export function useAdminOrder(orderId: string) {
+  return useQuery({
+    queryKey: ['admin', 'orders', orderId],
+    queryFn: () => api.get<AdminOrderResponse>(`/api/admin/orders/${orderId}`),
+    enabled: Boolean(orderId),
+    retry: 0,
+  });
+}
+
+export function useAdminOrderCancel() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ orderId, reason }: { orderId: string; reason: string }) =>
+      api.patch<{ data: AdminOrderSummary }>(`/api/admin/orders/${orderId}/cancel`, { reason }),
+    onSuccess: (_data, { orderId }) => {
+      qc.invalidateQueries({ queryKey: ['admin', 'orders'] });
+      qc.invalidateQueries({ queryKey: ['admin', 'orders', orderId] });
+      qc.invalidateQueries({ queryKey: ['admin', 'orders', 'stats'] });
+      qc.invalidateQueries({ queryKey: ['admin', 'stats'] });
+    },
   });
 }

@@ -1,8 +1,10 @@
+import { Suspense } from 'react';
+import OrderList from '@/views/Orders/OrderList';
+
 export default function OrdersPage() {
   return (
-    <div>
-      <h1 className="font-serif text-2xl font-semibold">Commandes</h1>
-      <p className="mt-2 text-sm text-muted-foreground">Page admin commandes (P8-1).</p>
-    </div>
+    <Suspense fallback={<div className="text-sm text-muted-foreground">Chargement…</div>}>
+      <OrderList />
+    </Suspense>
   );
 }
