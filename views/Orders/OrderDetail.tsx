@@ -9,7 +9,7 @@ import ActionWithReasonModal from '@/components/ui/ActionWithReasonModal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useAdminOrder, useAdminOrderCancel } from '@/hooks/useAdmin';
+import { useAdminOrder, useAdminOrderCancel, useAdminOrders } from '@/hooks/useAdmin';
 import {
   ORDER_STATUS_LABELS,
   PAYMENT_METHOD_LABELS,
@@ -19,6 +19,7 @@ import {
   formatTogoRegion,
   orderStatusBadgeClass,
   paymentMethodBadgeClass,
+  samePurchaseSession,
   timelineDotClass,
 } from '@/lib/order-utils';
 import { formatFcfa } from '@/lib/utils';
@@ -35,6 +36,20 @@ export default function OrderDetail({ orderId }: OrderDetailProps) {
   const cancel = useAdminOrderCancel();
 
   const order = data?.data;
+
+  const { data: buyerOrdersData } = useAdminOrders(
+    { buyer_id: order?.buyer_id, limit: 50 },
+    { enabled: Boolean(order?.buyer_id) },
+  );
+
+  const relatedOrders = useMemo(() => {
+    if (!order) return [];
+    return (buyerOrdersData?.data ?? []).filter(
+      (o) =>
+        o.id !== order.id &&
+        samePurchaseSession(o.created_at, order.created_at),
+    );
+  }, [order, buyerOrdersData?.data]);
 
   const latitude = order?.shipping_address.latitude;
   const longitude = order?.shipping_address.longitude;
@@ -186,17 +201,24 @@ export default function OrderDetail({ orderId }: OrderDetailProps) {
             </div>
             <div className="space-y-2 border-t pt-4 text-sm">
               <div className="flex justify-between gap-3">
-                <span className="text-muted-foreground">Total articles</span>
+                <span className="text-muted-foreground">Articles de cette commande</span>
                 <span className="font-medium tabular-nums">{formatFcfa(itemsTotal)}</span>
               </div>
               <div className="flex justify-between gap-3">
-                <span className="text-muted-foreground">Frais livraison</span>
+                <span className="text-muted-foreground">Frais de livraison</span>
                 <span className="font-medium tabular-nums">{formatFcfa(order.shipping_fee)}</span>
               </div>
+              {order.shipping_detail && (
+                <p className="text-xs text-muted-foreground">{order.shipping_detail}</p>
+              )}
               <div className="flex justify-between gap-3 border-t pt-2">
-                <span className="font-semibold">Total général</span>
+                <span className="font-semibold">Total de cette commande</span>
                 <span className="font-semibold tabular-nums">{formatFcfa(order.total_amount)}</span>
               </div>
+              <p className="pt-2 text-xs text-muted-foreground">
+                Cette commande correspond aux articles du vendeur {order.vendor.shop_name}. Chaque
+                vendeur du panier génère une commande distincte.
+              </p>
             </div>
           </section>
 
@@ -310,6 +332,31 @@ export default function OrderDetail({ orderId }: OrderDetailProps) {
               </Link>
             </Button>
           </section>
+
+          {relatedOrders.length > 0 && (
+            <section className="space-y-3 rounded-lg border p-5">
+              <h2 className="text-sm font-semibold">Commandes liées</h2>
+              <p className="text-xs text-muted-foreground">
+                Autres commandes du même achat (même session de paiement).
+              </p>
+              <ul className="space-y-2 text-sm">
+                {relatedOrders.map((related) => (
+                  <li key={related.id}>
+                    <Link
+                      href={`/orders/${related.id}`}
+                      className="font-medium text-primary hover:underline"
+                    >
+                      {formatOrderRef(related.id)}
+                    </Link>
+                    <span className="text-muted-foreground">
+                      {' '}
+                      · {related.shop_name} · {formatFcfa(related.total_amount)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           <section className="space-y-3 rounded-lg border p-5">
             <h2 className="text-sm font-semibold">Actions d&apos;administration</h2>

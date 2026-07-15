@@ -1,4 +1,5 @@
 import type { OrderStatus, PaymentMethod } from '@/lib/types';
+import { formatFcfa } from '@/lib/utils';
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   PENDING: 'En attente',
@@ -125,4 +126,21 @@ export function paymentMethodBadgeClass(method: PaymentMethod): string {
 
 export function canAdminCancelOrder(status: OrderStatus): boolean {
   return ['PENDING', 'CONFIRMED', 'PREPARING', 'SHIPPED'].includes(status);
+}
+
+export function getOrderItemsTotal(totalAmount: number, shippingFee: number): number {
+  return totalAmount - shippingFee;
+}
+
+export function formatOrderAmountTooltip(itemsTotal: number, shippingFee: number): string {
+  return `Articles : ${formatFcfa(itemsTotal)} · Livraison : ${formatFcfa(shippingFee)}`;
+}
+
+export function formatShippingMethodLabel(method: 'PER_KM' | 'FIXED'): string {
+  return method === 'PER_KM' ? 'Par kilomètre' : 'Prix fixe inter-région';
+}
+
+export function samePurchaseSession(createdAtA: string, createdAtB: string): boolean {
+  const key = (iso: string) => new Date(iso).toISOString().slice(0, 19);
+  return key(createdAtA) === key(createdAtB);
 }

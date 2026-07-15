@@ -155,31 +155,25 @@ export default function UserList() {
   const columns = useMemo<ColumnDef<AdminMarketplaceUserSummary>[]>(
     () => [
       {
-        id: 'avatar',
-        header: '',
+        id: 'user',
+        header: 'Utilisateur',
         cell: ({ row }) => {
           const user = row.original;
           const name = `${user.first_name} ${user.last_name}`;
           return (
-            <Avatar className="size-9">
-              <AvatarFallback className={avatarClass(user.role)}>
-                {getInitials(name)}
-              </AvatarFallback>
-            </Avatar>
+            <div className="flex min-w-0 items-center gap-3">
+              <Avatar className="size-9 shrink-0">
+                <AvatarFallback className={avatarClass(user.role)}>
+                  {getInitials(name)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <p className="font-medium">{name}</p>
+                <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+              </div>
+            </div>
           );
         },
-      },
-      {
-        id: 'name',
-        header: 'Utilisateur',
-        cell: ({ row }) => (
-          <div className="min-w-0">
-            <p className="font-medium">
-              {row.original.first_name} {row.original.last_name}
-            </p>
-            <p className="truncate text-xs text-muted-foreground">{row.original.email}</p>
-          </div>
-        ),
       },
       {
         accessorKey: 'role',

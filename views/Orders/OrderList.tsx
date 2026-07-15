@@ -32,11 +32,14 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAdminOrders, useAdminOrderStats } from '@/hooks/useAdmin';
 import {
   ORDER_STATUS_LABELS,
+  formatOrderAmountTooltip,
   formatOrderDate,
   formatOrderRef,
+  getOrderItemsTotal,
   orderStatusBadgeClass,
 } from '@/lib/order-utils';
 import type { AdminOrderSummary } from '@/lib/types';
@@ -159,20 +162,29 @@ export default function OrderList() {
         id: 'items',
         header: 'Articles',
         cell: ({ row }) => (
-          <div className="text-sm">
-            <p className="tabular-nums">
-              {row.original.items_count} article{row.original.items_count !== 1 ? 's' : ''}
-            </p>
-            <p className="font-medium tabular-nums">{formatFcfa(row.original.total_amount)}</p>
-          </div>
+          <span className="text-sm tabular-nums">
+            {row.original.items_count} article{row.original.items_count !== 1 ? 's' : ''}
+          </span>
         ),
       },
       {
-        accessorKey: 'shipping_fee',
-        header: 'Frais livraison',
-        cell: ({ row }) => (
-          <span className="text-sm tabular-nums">{formatFcfa(row.original.shipping_fee)}</span>
-        ),
+        id: 'amount',
+        header: 'Montant',
+        cell: ({ row }) => {
+          const itemsTotal = getOrderItemsTotal(row.original.total_amount, row.original.shipping_fee);
+          return (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="cursor-default text-sm font-medium tabular-nums">
+                  {formatFcfa(row.original.total_amount)}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                {formatOrderAmountTooltip(itemsTotal, row.original.shipping_fee)}
+              </TooltipContent>
+            </Tooltip>
+          );
+        },
       },
       {
         accessorKey: 'status',

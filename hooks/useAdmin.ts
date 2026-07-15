@@ -391,11 +391,15 @@ export function useAdminOrderStats() {
   });
 }
 
-export function useAdminOrders(params?: AdminOrdersQueryParams) {
+export function useAdminOrders(
+  params?: AdminOrdersQueryParams,
+  options?: { enabled?: boolean },
+) {
   const qs = buildOrdersQuery(params);
   return useQuery({
     queryKey: ['admin', 'orders', params],
     queryFn: () => api.get<AdminOrdersResponse>(`/api/admin/orders?${qs}`),
+    enabled: options?.enabled ?? true,
     retry: 0,
   });
 }

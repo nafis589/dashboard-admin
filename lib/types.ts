@@ -217,6 +217,7 @@ export interface AdminOrderSummary {
   status: OrderStatus;
   total_amount: number;
   shipping_fee: number;
+  shipping_detail: string | null;
   payment_method: PaymentMethod;
   buyer_name: string;
   shop_name: string;
