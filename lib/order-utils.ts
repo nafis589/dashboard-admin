@@ -9,6 +9,7 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   DELIVERED: 'Livrée',
   CANCELLED: 'Annulée',
   RETURNED: 'Retournée',
+  REFUSED: 'Refusée',
 };
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
@@ -34,6 +35,8 @@ export function orderStatusBadgeClass(status: OrderStatus): string {
       return 'border-transparent bg-emerald-500/15 text-emerald-700 dark:text-emerald-300';
     case 'CANCELLED':
       return 'border-transparent bg-red-500/15 text-red-700 dark:text-red-300';
+    case 'REFUSED':
+      return 'border-transparent bg-[#7F1D1D] text-white';
     case 'RETURNED':
       return 'border-transparent bg-slate-500/15 text-slate-600 dark:text-slate-300';
     default:
@@ -55,6 +58,8 @@ export function timelineDotClass(status: OrderStatus): string {
       return 'bg-emerald-500 ring-emerald-500/20';
     case 'CANCELLED':
       return 'bg-red-500 ring-red-500/20';
+    case 'REFUSED':
+      return 'bg-[#7F1D1D] ring-[#7F1D1D]/20';
     case 'RETURNED':
       return 'bg-slate-400 ring-slate-400/20';
     default:

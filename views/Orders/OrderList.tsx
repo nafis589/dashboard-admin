@@ -53,6 +53,7 @@ const STATUS_FILTERS: { value: string; label: string }[] = [
   { value: 'SHIPPED', label: 'Expédiées' },
   { value: 'DELIVERED', label: 'Livrées' },
   { value: 'CANCELLED', label: 'Annulées' },
+  { value: 'REFUSED', label: 'Refusées' },
   { value: 'RETURNED', label: 'Retournées' },
 ];
 

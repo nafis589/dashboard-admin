@@ -211,14 +211,11 @@ export default function OrderDetail({ orderId }: OrderDetailProps) {
               {order.shipping_detail && (
                 <p className="text-xs text-muted-foreground">{order.shipping_detail}</p>
               )}
-              <div className="flex justify-between gap-3 border-t pt-2">
+              <div className="flex justify-between gap-3 pt-2">
                 <span className="font-semibold">Total de cette commande</span>
                 <span className="font-semibold tabular-nums">{formatFcfa(order.total_amount)}</span>
               </div>
-              <p className="pt-2 text-xs text-muted-foreground">
-                Cette commande correspond aux articles du vendeur {order.vendor.shop_name}. Chaque
-                vendeur du panier génère une commande distincte.
-              </p>
+              
             </div>
           </section>
 

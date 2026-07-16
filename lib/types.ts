@@ -145,7 +145,7 @@ export interface AdminStatsChart {
     date: string;
     carts: number;
     orders: number;
-    abandonment_rate: number;
+    abandonment_rate: number | null;
   }>;
 }
 
@@ -206,7 +206,8 @@ export type OrderStatus =
   | 'SHIPPED'
   | 'DELIVERED'
   | 'CANCELLED'
-  | 'RETURNED';
+  | 'RETURNED'
+  | 'REFUSED';
 
 export type PaymentMethod = 'CASH_ON_DELIVERY' | 'BANK_TRANSFER';
 
